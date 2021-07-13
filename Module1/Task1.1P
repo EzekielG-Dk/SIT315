@@ -1,1 +1,25 @@
+int pir = 6;
+int led = 7;
+int motion;
 
+void setup()
+{
+  pinMode(led, OUTPUT);
+  pinMode(pir, INPUT);
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  motion = digitalRead(pir); 
+  if(motion == HIGH)
+  {
+    Serial.println("Movement");
+   	digitalWrite(7, HIGH);
+  }
+  else
+  {
+    Serial.println("No Movement");
+    digitalWrite(7, LOW);
+  }
+}
