@@ -1,0 +1,39 @@
+//Global variables
+int pir = 2;
+int led = 7;
+
+volatile int motion = 0; //Variable for reading if there is movement
+void setup()
+{
+  //Setup pinmodes
+  pinMode(led, OUTPUT);
+  pinMode(pir, INPUT);
+  
+  //Setup interrupt on pir sensor
+  attachInterrupt(digitalPinToInterrupt(pir), movement_ISR, CHANGE);
+  //Start serial monitor
+  Serial.begin(9600);
+}
+
+void loop()
+{
+}
+
+//Function run on interrupt
+void movement_ISR()
+{
+  //Read the pin
+  motion = digitalRead(pir); 
+  
+  //Perform high or low action
+  if(motion == HIGH)
+  {
+    Serial.println("Movement");
+   	digitalWrite(7, HIGH);
+  }
+  else
+  {
+    Serial.println("No Movement");
+    digitalWrite(7, LOW);
+  }
+}
