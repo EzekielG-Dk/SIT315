@@ -1,0 +1,72 @@
+//Global variables
+int pir_1 = 2;
+int pir_2 = 3;
+int led_red = 11;
+int led_green = 8;
+int led_blue = 9;
+
+volatile int motion_1 = 0; //Variable for reading if there is movement
+volatile int motion_2 = 0;
+
+void setup()
+{
+  //Setup pinmodes
+  pinMode(led_red, OUTPUT);
+  pinMode(led_green, OUTPUT);
+  pinMode(led_blue, OUTPUT);
+  pinMode(pir_1, INPUT);
+  pinMode(pir_2, INPUT);
+  
+  //Setup interrupt on pir sensors
+  attachInterrupt(digitalPinToInterrupt(pir_1), movement_ISR_1, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(pir_2), movement_ISR_2, CHANGE);
+  
+  //Start serial monitor
+  Serial.begin(9600);
+}
+
+void loop()
+{
+}
+
+//Function run on interrupt for pir_1
+void movement_ISR_1()
+{
+  //Read the pin
+  motion_1 = digitalRead(pir_1);
+  
+  //Decide what to set the led on or off
+  if(motion_1 == HIGH)
+  {
+    //Motion means light
+    Serial.println("Movement on 1");
+   	digitalWrite(led_red, HIGH);
+  }
+  else
+  {
+    //No motion means no light
+    Serial.println("No Movement on 1");
+    digitalWrite(led_red, LOW);
+  }
+}
+
+//Function run on interrupt for pir_2
+void movement_ISR_2()
+{
+  //Read the pin
+  motion_2 = digitalRead(pir_2);
+  
+  //Decide what to set the led on or off
+  if(motion_2 == HIGH)
+  {
+    //Motion means light
+    Serial.println("Movement on 2");
+   	digitalWrite(led_blue, HIGH);
+  }
+  else
+  {
+    //No motion means no light
+    Serial.println("No Movement on 2");
+    digitalWrite(led_blue, LOW);
+  }
+}
