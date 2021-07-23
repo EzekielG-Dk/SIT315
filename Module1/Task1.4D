@@ -1,0 +1,100 @@
+//Global variables
+int pir_1 = 2;
+int pir_2 = 3;
+int pir_3 = 4;
+int led_red = 11;
+int led_green = 8;
+int led_blue = 9;
+
+int timer_led = 12;
+
+volatile int motion_1, motion_2, motion_3 = 0; //Variable for reading if there is movement
+
+void setup()
+{
+  //Setup pinmodes
+  pinMode(led_red, OUTPUT);
+  pinMode(led_green, OUTPUT);
+  pinMode(led_blue, OUTPUT);
+  pinMode(pir_1, INPUT);
+  pinMode(pir_2, INPUT);
+  pinMode(pir_3, INPUT);
+  
+  //Turn iterrupts on port d
+  PCICR |= 0b00000100;
+  //Enable pins 2, 3 and 4 for interrupt
+  PCMSK2 |= 0b00011100;
+  
+  //Setup timer interrupt 
+  //Setup pinmode for timer output
+  pinMode(timer_led, OUTPUT);
+  //Disable interrupts
+  noInterrupts();
+  //Clear the registers
+  TCCR1A = 0;
+  TCCR1B = 0;
+  TCNT1 = 0;
+  //I want the led to turn on and off two times a second
+  //2Hz = (16000000/((15625)*1024))
+  //Set timer compare
+  OCR1A = 15625;
+  //Prescaler set at 1024
+  TCCR1B |= (1 << CS12) | (1 << CS10);
+  //Output compare match a interrupt enable
+  TIMSK1 |= (1 << OCIE1A);
+  // CTC
+  TCCR1B |= (1 << WGM12);
+  //Reenable interrupts
+  interrupts();
+  
+  //Start serial monitor
+  Serial.begin(9600);
+}
+
+void loop()
+{
+}
+
+//PIR interrupts for each of the three PIR sensors
+ISR(PCINT2_vect)
+{
+  //Read values of interrupting pins
+  motion_1 = PIND & B00010000;
+  motion_2 = PIND & B00001000;
+  motion_3 = PIND & B00000100;
+  
+  //Set led light to value of interrupted pins
+  digitalWrite(led_red, motion_1);
+  digitalWrite(led_green, motion_2);
+  digitalWrite(led_blue, motion_3);
+   
+  //Write out to serial monitor if there was any movement
+  if (motion_1)
+  {
+    Serial.println("Motion on 1");
+  }
+  if (motion_2)
+  {
+    Serial.println("Motion on 2");
+  }
+  if (motion_3)
+  {
+    Serial.println("Motion on 3");
+  }
+}
+
+//Timer interrupt happens every 2 seconds
+ISR(TIMER1_COMPA_vect)
+{
+  //Read the current value of the time led and invert it
+  digitalWrite(timer_led, digitalRead(timer_led) ^ 1);
+  if(digitalRead(timer_led))
+  {
+    Serial.println("Timer On");
+  }
+  else
+  {
+    Serial.println("Timer Off");
+  }
+  
+}
