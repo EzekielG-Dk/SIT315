@@ -61,7 +61,7 @@ int main() {
         #pragma omp for
         for (int i = 0; i < size; i++)
         {
-            #pragma atomic update
+            #pragma omp atomic
             total_atom += v3[i];
         }
     }
