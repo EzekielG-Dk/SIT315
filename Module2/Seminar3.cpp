@@ -55,8 +55,10 @@ int main() {
         }
     }
 
+    auto start1 = high_resolution_clock::now();
+
     //Calculate total using atomic attributes
-     #pragma omp parallel default(none) shared(v3, total_atom)
+     #pragma omp parallel default(none) shared(v3, total_atom, size)
     {
         #pragma omp for
         for (int i = 0; i < size; i++)
@@ -65,9 +67,12 @@ int main() {
             total_atom += v3[i];
         }
     }
+
+    auto stop1 = high_resolution_clock::now();
+    auto start2 = high_resolution_clock::now();
     
     //Calculate total using a reduction
-    #pragma omp parallel default(none) shared(v3) reduction(+:total_redu)
+    #pragma omp parallel default(none) shared(v3, size) reduction(+:total_redu)
     {
         #pragma omp for
         for (int i = 0; i < size; i++)
@@ -76,8 +81,11 @@ int main() {
         }
     }
 
+    auto stop2 = high_resolution_clock::now();
+    auto start3 = high_resolution_clock::now();
+
     //Calculate total using a seperate private variable for each thread added to another one
-    #pragma omp parallel default(none) shared(total_crit, v3) firstprivate(no_total)
+    #pragma omp parallel default(none) shared(total_crit, v3, size) firstprivate(no_total)
     {
         #pragma omp for
         for (int i = 0; i < size; i++)
@@ -91,17 +99,20 @@ int main() {
         }
     }
 
+    auto stop3 = high_resolution_clock::now();
     auto stop = high_resolution_clock::now();
 
-    //ToDo: Add Comment
     auto duration = duration_cast<microseconds>(stop - start);
-
+    auto duration1 = duration_cast<microseconds>(stop1 - start1);
+    auto duration2 = duration_cast<microseconds>(stop2 - start2);
+    auto duration3 = duration_cast<microseconds>(stop3 - start3);
 
     cout << "Time taken by function: "
         << duration.count() << " microseconds" << endl;
-    cout << "Total using atomic: " << total_atom << endl;
-    cout << "Total using reduction: " << total_redu << endl;
-    cout << "Total using critical: " << total_crit << endl;
+
+    cout << "Total using atomic: " << total_atom << " in " << duration1.count() << " seconds" << endl;
+    cout << "Total using reduction: " << total_redu << " in " << duration2.count() << " seconds" << endl;
+    cout << "Total using critical: " << total_crit << " in " << duration3.count() << " seconds" << endl;
 
     return 0;
 }
